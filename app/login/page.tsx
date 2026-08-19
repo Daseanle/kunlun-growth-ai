@@ -11,8 +11,9 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/tutorials";
   const authError = searchParams.get("error");
+  const errorReason = searchParams.get("reason");
 
-  const [mode, setMode] = useState<"magic" | "password">("magic");
+  const [mode, setMode] = useState<"magic" | "password">("password");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -20,10 +21,14 @@ function LoginForm() {
 
   useEffect(() => {
     if (authError === "auth") {
-      setMessage("登录失败，魔法链接可能已过期，请重新发送。");
+      const tip = errorReason && errorReason !== "no_code"
+        ? `（${decodeURIComponent(errorReason)}）`
+        : "";
+      setMessage(`登录失败，魔法链接可能已过期${tip}，请改用密码登录，或重新发送。`);
       setMessageType("error");
+      setMode("password");
     }
-  }, [authError]);
+  }, [authError, errorReason]);
 
   async function sendMagicLink(event: React.FormEvent) {
     event.preventDefault();
@@ -159,7 +164,7 @@ function LoginForm() {
             登录
           </button>
           <p style={{ fontSize: "13px", color: "var(--muted)", marginTop: "12px" }}>
-            还没有密码？先<a href="/account/password" style={{ color: "var(--purple)", fontWeight: 700 }}>用魔法链接登录</a>后设置。
+            还没有账号？点击上方「魔法链接」标签，用邮箱注册后即可设置密码。
           </p>
         </form>
       )}
@@ -184,7 +189,7 @@ export default function LoginPage() {
         <span className="eyebrow">ACCOUNT</span>
         <h1 className="page-title">登录后，把实战进度带到每一台设备。</h1>
         <p className="page-lead">
-          使用邮箱登录；不需要设置密码。配置完成前，网站仍可以公开浏览。
+          推荐使用密码登录，速度更快。首次使用请切换到「魔法链接」注册。
         </p>
         <Suspense fallback={<p className="form-message">加载中…</p>}>
           <LoginForm />

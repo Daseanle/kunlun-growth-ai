@@ -25,8 +25,9 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}${next}`);
     }
     console.error("Auth code exchange failed:", error.message);
+    return NextResponse.redirect(`${origin}/login?error=auth&reason=${encodeURIComponent(error.message)}`);
   }
 
   // 交换失败或没有 code 参数，重定向到登录页并带错误标记
-  return NextResponse.redirect(`${origin}/login?error=auth`);
+  return NextResponse.redirect(`${origin}/login?error=auth&reason=no_code`);
 }
