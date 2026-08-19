@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Tutorial, TutorialBlock } from "@/lib/tutorials";
 
 function Block({ block }: { block: TutorialBlock }) {
@@ -19,9 +19,19 @@ function CopyButton({ text }: { text: string }) {
 
 export function TutorialDocument({ tutorial, sourceAuthors }: { tutorial: Tutorial; sourceAuthors: string[] }) {
   const storageKey = useMemo(() => `kunlun-guide-${tutorial.short}`, [tutorial.short]);
-  const [done, setDone] = useState<number[]>(() => typeof window === "undefined" ? [] : JSON.parse(localStorage.getItem(storageKey) || "[]"));
+  const [done, setDone] = useState<number[]>([]);
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) setDone(JSON.parse(stored));
+    } catch { /* corrupted localStorage, ignore */ }
+  }, [storageKey]);
   const completed = (index: number) => done.includes(index);
-  function toggle(index: number) { const next = completed(index) ? done.filter((value) => value !== index) : [...done, index]; setDone(next); localStorage.setItem(storageKey, JSON.stringify(next)); }
+  function toggle(index: number) {
+    const next = completed(index) ? done.filter((value) => value !== index) : [...done, index];
+    setDone(next);
+    try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch { /* storage full or disabled */ }
+  }
   return <div className="guide-page">
     <header className="guide-topbar"><Link href="/tutorials" className="guide-brand"><span></span>昆仑增长AI实战 <small>清爽分步教程</small></Link><div className="guide-top-actions"><Link href="/tutorials">▦ 教程合集</Link><CopyButton text={`${tutorial.short}\n\n${tutorial.goal || tutorial.sub}`} /></div></header>
     <div className="guide-layout">

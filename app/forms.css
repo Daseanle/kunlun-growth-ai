@@ -4,3 +4,5 @@
 .account-nav-item:hover{color:var(--ink)}
 .account-nav-item.active{color:var(--purple);border-bottom-color:var(--purple)}
 @media(max-width:560px){.account-nav{gap:4px}.account-nav-item{padding:8px 12px;font-size:13px}}
+.field-error{color:#dc2626;font-size:12px;font-weight:600;margin-top:2px}
+.form-card .button:disabled{opacity:.55;cursor:not-allowed}
