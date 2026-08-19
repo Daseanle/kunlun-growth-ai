@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { Tutorial, TutorialBlock } from "@/lib/tutorials";
+import { ShareButtons } from "./share-buttons";
 
 function Block({ block }: { block: TutorialBlock }) {
   if (block.type === "prompt" || block.type === "code") return <div className="guide-code"><div><span>{block.type === "prompt" ? "✨ 复制给 AI" : "⌘ "}{block.label || "操作内容"}</span><CopyButton text={block.text} /></div><pre>{block.text}</pre></div>;
@@ -37,7 +38,7 @@ export function TutorialDocument({ tutorial, sourceAuthors }: { tutorial: Tutori
     <div className="guide-layout">
       <aside className="guide-sidebar"><div className="guide-progress"><div><i style={{ width: `${done.length / tutorial.steps.length * 100}%` }} /></div><small>{done.length} / {tutorial.steps.length} 步已完成</small></div><p className="guide-nav-label">开始</p><a href="#goal">目标与通关条件</a><p className="guide-nav-label">实操步骤</p>{tutorial.steps.map((step, index) => <a className={completed(index + 1) ? "is-done" : ""} href={`#step-${index + 1}`} key={step.title}><b>{completed(index + 1) ? "✓" : index + 1}</b>{step.title}</a>)}<p className="guide-nav-label">附录</p><a href="#faq">卡住了怎么办</a><a href="#sources">来源与作者</a></aside>
       <main className="guide-doc">
-        <section className="guide-hero"><span>✦ {tutorial.eyebrow}</span><h1 dangerouslySetInnerHTML={{ __html: tutorial.titleHtml }} /><p>{tutorial.sub}</p><div className="guide-chips">{tutorial.chips.map((chip) => <i key={chip} dangerouslySetInnerHTML={{ __html: chip }} />)}</div><div className="guide-actions"><a href="#step-1">▶ 从第 1 步开始</a><a href="#faq">? 直接看排错</a></div></section>
+        <section className="guide-hero"><span>✦ {tutorial.eyebrow}</span><h1 dangerouslySetInnerHTML={{ __html: tutorial.titleHtml }} /><p>{tutorial.sub}</p><div className="guide-chips">{tutorial.chips.map((chip) => <i key={chip} dangerouslySetInnerHTML={{ __html: chip }} />)}</div><div className="guide-actions"><a href="#step-1">▶ 从第 1 步开始</a><a href="#faq">? 直接看排错</a></div><ShareButtons title={tutorial.short} /></section>
         <div className="guide-note tip"><i>{tutorial.introIcon || "✦"}</i><p><b>{tutorial.introTitle || "成果优先"}</b>{tutorial.intro || tutorial.goal}</p></div>
         <section id="goal" className="guide-goal"><header><h2>你要做什么？</h2><p>{tutorial.goalLead || "从目标到成果，每一步都能验证。"}</p></header><div className="guide-card"><p>{tutorial.goal}</p><div className="guide-outcomes">{(tutorial.outcomes || []).map(([title, text], index) => <div key={title}><strong>0{index + 1}</strong><h3>{title}</h3><p>{text}</p></div>)}</div></div><div className="guide-card"><h3>通关条件</h3><div className="guide-checks">{tutorial.criteria?.map((item) => <span key={item}>✓ {item}</span>)}</div></div></section>
         <section className="guide-module"><small>HANDS-ON</small><h2>{tutorial.module || "从空白到可验证成果"}</h2><p>{tutorial.moduleSub || "范围先收紧，操作留证据，失败有退路。"}</p></section>
