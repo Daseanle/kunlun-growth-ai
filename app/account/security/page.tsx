@@ -50,12 +50,16 @@ export default function SecurityPage() {
   const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setFetching(false);
+      return;
+    }
     (async () => {
       try {
         const { data, error } = await createClient()
           .from("login_events")
-          .select("*")
+          .select("id, ip_address, device_type, browser, os, login_method, created_at")
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(50);
         if (!error && data) setEvents(data as LoginEvent[]);
@@ -64,7 +68,7 @@ export default function SecurityPage() {
       }
       setFetching(false);
     })();
-  }, [user]);
+  }, [user?.id]);
 
   if (loading) {
     return <p className="form-message">加载中…</p>;

@@ -11,10 +11,16 @@ import { logLoginEvent } from "@/lib/login-event";
  *
  * 参考: https://supabase.com/docs/guides/auth/server-side/nextjs
  */
+/** 校验重定向路径，防止开放重定向 */
+function safePath(value: string | null | undefined): string {
+  if (value && value.startsWith("/") && !value.startsWith("//")) return value;
+  return "/tutorials";
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/tutorials";
+  const next = safePath(searchParams.get("next"));
 
   if (code) {
     const supabase = await createClient();

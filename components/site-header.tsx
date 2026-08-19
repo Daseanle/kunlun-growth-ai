@@ -19,12 +19,13 @@ export function SiteHeader() {
       .select("display_name, avatar_url")
       .eq("id", user.id)
       .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
+      .then(({ data, error }) => {
+        if (!error && data) {
           setAvatarUrl(data.avatar_url);
           setDisplayName(data.display_name || "");
         }
-      });
+      })
+      .catch(() => {});
   }, [user]);
 
   const initial = (displayName || user?.email || "U")[0].toUpperCase();

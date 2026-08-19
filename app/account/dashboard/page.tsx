@@ -122,7 +122,7 @@ export default function DashboardPage() {
       if (loginsRes.data) setRecentLogins(loginsRes.data as LoginEvent[]);
       setFetching(false);
     })();
-  }, [user]);
+  }, [user?.id]);
 
   if (loading || fetching) {
     return <p className="form-message">加载中…</p>;

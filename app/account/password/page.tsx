@@ -102,43 +102,6 @@ function PasswordPageInner() {
     setBusy(false);
   }
 
-  /** 首次设置密码：不需要旧密码 */
-  async function handleSetPassword(event: React.FormEvent) {
-    event.preventDefault();
-    setMessage("");
-    setMessageType("");
-
-    if (newPassword.length < 8) {
-      setMessage("密码至少需要 8 个字符。");
-      setMessageType("error");
-      return;
-    }
-    if (newPassword !== confirm) {
-      setMessage("两次输入的密码不一致。");
-      setMessageType("error");
-      return;
-    }
-
-    setBusy(true);
-    try {
-      const { error } = await createClient().auth.updateUser({
-        password: newPassword,
-      });
-      if (error) {
-        setMessage(error.message);
-        setMessageType("error");
-      } else {
-        setMessage("密码设置成功！下次登录时可以使用邮箱 + 密码登录。");
-        setMessageType("success");
-        resetForm();
-      }
-    } catch {
-      setMessage("设置密码时发生异常，请稍后重试。");
-      setMessageType("error");
-    }
-    setBusy(false);
-  }
-
   /** 重置密码：发送验证码 */
   async function sendResetOtp(event: React.FormEvent) {
     event.preventDefault();
@@ -293,13 +256,6 @@ function PasswordPageInner() {
           style={tabBtnStyle(mode === "reset")}
         >
           重置密码
-        </button>
-        <button
-          type="button"
-          onClick={() => switchMode("set")}
-          style={tabBtnStyle(mode === "set")}
-        >
-          首次设置
         </button>
       </div>
 
@@ -509,52 +465,6 @@ function PasswordPageInner() {
         </form>
       )}
 
-      {mode === "set" && (
-        <form className="form-card" onSubmit={handleSetPassword}>
-          <label>
-            新密码
-            <input
-              required
-              type="password"
-              placeholder="至少 8 个字符"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-          </label>
-          <label>
-            确认密码
-            <input
-              required
-              type="password"
-              placeholder="再次输入密码"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-            />
-          </label>
-          <button className="button" type="submit" disabled={busy}>
-            {busy ? "保存中…" : "设置密码"}
-          </button>
-          <p
-            style={{
-              fontSize: "13px",
-              color: "var(--muted)",
-              marginTop: "12px",
-            }}
-          >
-            适用于从未设置过密码的账号。
-          </p>
-          {message && (
-            <p
-              className="form-message"
-              style={{
-                color: messageType === "success" ? "#2d8060" : "#d33",
-              }}
-            >
-              {message}
-            </p>
-          )}
-        </form>
-      )}
     </>
   );
 }

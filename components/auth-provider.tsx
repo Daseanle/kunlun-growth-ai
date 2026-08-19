@@ -63,8 +63,11 @@ export function AuthProvider({
   const signOut = async () => {
     if (!hasSupabaseConfig) return;
     const supabase = createClient();
-    await supabase.auth.signOut();
-    setSession(null);
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      setSession(null);
+      window.location.href = "/login";
+    }
   };
 
   return (

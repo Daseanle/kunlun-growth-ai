@@ -64,7 +64,7 @@ export default function ProfilePage() {
       }
       setFetching(false);
     })();
-  }, [user]);
+  }, [user?.id]);
 
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

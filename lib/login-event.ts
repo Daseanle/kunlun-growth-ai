@@ -7,7 +7,7 @@ import { parseUserAgent, getClientIP, type ParsedUA } from "@/lib/ua-parser";
  */
 export async function logLoginEvent(
   request: Request,
-  loginMethod: "magic_link" | "password"
+  loginMethod: "magic_link" | "password" | "otp"
 ): Promise<void> {
   try {
     const supabase = await createClient();

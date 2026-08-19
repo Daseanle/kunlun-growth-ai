@@ -7,7 +7,10 @@ const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 export const hasSupabaseConfig = Boolean(url && key);
 
+let client: ReturnType<typeof createBrowserClient> | null = null;
+
 export function createClient() {
   if (!url || !key) throw new Error("Supabase 尚未配置");
-  return createBrowserClient(url, key);
+  if (!client) client = createBrowserClient(url, key);
+  return client;
 }

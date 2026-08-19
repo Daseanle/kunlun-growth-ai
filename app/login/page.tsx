@@ -7,9 +7,14 @@ import { Footer } from "@/components/footer";
 import { SiteHeader } from "@/components/site-header";
 import { createClient, hasSupabaseConfig } from "@/lib/supabase/client";
 
+function safeRedirect(value: string | null): string {
+  if (value && value.startsWith("/") && !value.startsWith("//")) return value;
+  return "/tutorials";
+}
+
 function LoginForm() {
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/tutorials";
+  const redirect = safeRedirect(searchParams.get("redirect"));
   const authError = searchParams.get("error");
   const errorReason = searchParams.get("reason");
 
@@ -19,14 +24,20 @@ function LoginForm() {
   const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [forgotPassword, setForgotPassword] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error" | "">("");
 
   useEffect(() => {
     if (authError === "auth") {
-      const tip = errorReason && errorReason !== "no_code"
-        ? `（${decodeURIComponent(errorReason)}）`
-        : "";
+      let tip = "";
+      try {
+        tip = errorReason && errorReason !== "no_code"
+          ? `（${decodeURIComponent(errorReason)}）`
+          : "";
+      } catch {
+        tip = "";
+      }
       setMessage(`登录失败${tip}，请改用密码登录或验证码登录。`);
       setMessageType("error");
       setMode("password");
@@ -40,6 +51,7 @@ function LoginForm() {
       setMessageType("error");
       return;
     }
+    setBusy(true);
     const { error } = await createClient().auth.signInWithOtp({
       email,
     });
@@ -51,6 +63,7 @@ function LoginForm() {
       setMessage("验证码已发送，请查收邮箱并输入验证码。");
       setMessageType("success");
     }
+    setBusy(false);
   }
 
   async function verifyOtpCode(event: React.FormEvent) {
@@ -60,6 +73,7 @@ function LoginForm() {
       setMessageType("error");
       return;
     }
+    setBusy(true);
     const { error } = await createClient().auth.verifyOtp({
       email,
       token: otpCode,
@@ -85,6 +99,7 @@ function LoginForm() {
       }
       window.location.href = forgotPassword ? "/account/password?reset=1" : redirect;
     }
+    setBusy(false);
   }
 
   async function signInWithPassword(event: React.FormEvent) {
@@ -94,6 +109,7 @@ function LoginForm() {
       setMessageType("error");
       return;
     }
+    setBusy(true);
     const { error } = await createClient().auth.signInWithPassword({
       email,
       password,
@@ -118,6 +134,7 @@ function LoginForm() {
       }
       window.location.href = redirect;
     }
+    setBusy(false);
   }
 
   const tabBtnStyle = (active: boolean): React.CSSProperties => ({
@@ -145,7 +162,7 @@ function LoginForm() {
         </button>
         <button
           type="button"
-          onClick={() => { setMode("otp"); setMessage(""); setMessageType(""); setOtpSent(false); setOtpCode(""); }}
+          onClick={() => { setMode("otp"); setForgotPassword(false); setMessage(""); setMessageType(""); setOtpSent(false); setOtpCode(""); }}
           style={tabBtnStyle(mode === "otp")}
         >
           验证码登录
@@ -253,8 +270,8 @@ function LoginForm() {
               </button>
             </div>
           ) : (
-            <button className="button" type="submit" style={{ width: "100%", marginTop: "16px" }}>
-              发送验证码
+            <button className="button" type="submit" disabled={busy} style={{ width: "100%", marginTop: "16px" }}>
+              {busy ? "发送中…" : "发送验证码"}
             </button>
           )}
         </form>
