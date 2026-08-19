@@ -41,12 +41,9 @@ function LoginForm() {
     }
     const { error } = await createClient().auth.signInWithOtp({
       email,
-      options: {
-        emailRedirectTo: `${location.origin}/auth/confirm?next=${encodeURIComponent(redirect)}`,
-      },
     });
     if (error) {
-      setMessage(error.message);
+      setMessage(`发送失败：${error.message}`);
       setMessageType("error");
     } else {
       setOtpSent(true);
@@ -68,7 +65,12 @@ function LoginForm() {
       type: "email",
     });
     if (error) {
-      setMessage(error.message);
+      const msg = error.message.toLowerCase();
+      if (msg.includes("expired") || msg.includes("invalid")) {
+        setMessage("验证码不正确或已过期，请重新发送验证码再试。");
+      } else {
+        setMessage(`验证失败：${error.message}`);
+      }
       setMessageType("error");
     } else {
       try {
@@ -96,7 +98,12 @@ function LoginForm() {
       password,
     });
     if (error) {
-      setMessage(error.message);
+      const msg = error.message.toLowerCase();
+      if (msg.includes("invalid login")) {
+        setMessage("邮箱或密码不正确，请重试。");
+      } else {
+        setMessage(`登录失败：${error.message}`);
+      }
       setMessageType("error");
     } else {
       try {
