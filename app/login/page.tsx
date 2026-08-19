@@ -13,9 +13,11 @@ function LoginForm() {
   const authError = searchParams.get("error");
   const errorReason = searchParams.get("reason");
 
-  const [mode, setMode] = useState<"magic" | "password">("password");
+  const [mode, setMode] = useState<"password" | "otp">("password");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error" | "">("");
 
@@ -24,16 +26,16 @@ function LoginForm() {
       const tip = errorReason && errorReason !== "no_code"
         ? `（${decodeURIComponent(errorReason)}）`
         : "";
-      setMessage(`登录失败，魔法链接可能已过期${tip}，请改用密码登录，或重新发送。`);
+      setMessage(`登录失败${tip}，请改用密码登录或验证码登录。`);
       setMessageType("error");
       setMode("password");
     }
   }, [authError, errorReason]);
 
-  async function sendMagicLink(event: React.FormEvent) {
+  async function sendOtp(event: React.FormEvent) {
     event.preventDefault();
     if (!hasSupabaseConfig) {
-      setMessage("登录服务正在接入：尚未配置 Supabase 云端认证。其他教程内容仍可公开浏览。");
+      setMessage("登录服务正在接入：尚未配置 Supabase 云端认证。");
       setMessageType("error");
       return;
     }
@@ -47,8 +49,38 @@ function LoginForm() {
       setMessage(error.message);
       setMessageType("error");
     } else {
-      setMessage("登录链接已发送，请查收邮箱。");
+      setOtpSent(true);
+      setMessage("验证码已发送，请查收邮箱并输入验证码。");
       setMessageType("success");
+    }
+  }
+
+  async function verifyOtpCode(event: React.FormEvent) {
+    event.preventDefault();
+    if (!hasSupabaseConfig) {
+      setMessage("登录服务正在接入：尚未配置 Supabase 云端认证。");
+      setMessageType("error");
+      return;
+    }
+    const { error } = await createClient().auth.verifyOtp({
+      email,
+      token: otpCode,
+      type: "email",
+    });
+    if (error) {
+      setMessage(error.message);
+      setMessageType("error");
+    } else {
+      try {
+        await fetch("/api/log-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ loginMethod: "otp" }),
+        });
+      } catch {
+        // 记录失败不影响登录
+      }
+      window.location.href = redirect;
     }
   }
 
@@ -67,7 +99,6 @@ function LoginForm() {
       setMessage(error.message);
       setMessageType("error");
     } else {
-      // 记录密码登录事件
       try {
         await fetch("/api/log-login", {
           method: "POST",
@@ -81,64 +112,39 @@ function LoginForm() {
     }
   }
 
+  const tabBtnStyle = (active: boolean): React.CSSProperties => ({
+    padding: "10px 16px",
+    font: "inherit",
+    fontWeight: 800,
+    fontSize: "14px",
+    background: "none",
+    border: "none",
+    borderBottom: active ? "2px solid var(--purple)" : "2px solid transparent",
+    color: active ? "var(--purple)" : "var(--muted)",
+    cursor: "pointer",
+    marginBottom: "-1px",
+  });
+
   return (
     <div className="form-card">
       <div className="login-tabs" style={{ display: "flex", gap: "4px", marginBottom: "24px", borderBottom: "1px solid var(--line)" }}>
         <button
           type="button"
-          onClick={() => { setMode("magic"); setMessage(""); setMessageType(""); }}
-          style={{
-            padding: "10px 16px",
-            font: "inherit",
-            fontWeight: 800,
-            fontSize: "14px",
-            background: "none",
-            border: "none",
-            borderBottom: mode === "magic" ? "2px solid var(--purple)" : "2px solid transparent",
-            color: mode === "magic" ? "var(--purple)" : "var(--muted)",
-            cursor: "pointer",
-            marginBottom: "-1px",
-          }}
-        >
-          魔法链接
-        </button>
-        <button
-          type="button"
           onClick={() => { setMode("password"); setMessage(""); setMessageType(""); }}
-          style={{
-            padding: "10px 16px",
-            font: "inherit",
-            fontWeight: 800,
-            fontSize: "14px",
-            background: "none",
-            border: "none",
-            borderBottom: mode === "password" ? "2px solid var(--purple)" : "2px solid transparent",
-            color: mode === "password" ? "var(--purple)" : "var(--muted)",
-            cursor: "pointer",
-            marginBottom: "-1px",
-          }}
+          style={tabBtnStyle(mode === "password")}
         >
           密码登录
         </button>
+        <button
+          type="button"
+          onClick={() => { setMode("otp"); setMessage(""); setMessageType(""); setOtpSent(false); setOtpCode(""); }}
+          style={tabBtnStyle(mode === "otp")}
+        >
+          验证码登录
+        </button>
       </div>
 
-      {mode === "magic" ? (
-        <form onSubmit={sendMagicLink}>
-          <label>
-            邮箱
-            <input
-              required
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
-          <button className="button" type="submit" style={{ width: "100%", marginTop: "16px" }}>
-            发送登录链接
-          </button>
-        </form>
-      ) : (
+      {mode === "password" ? (
         <form onSubmit={signInWithPassword}>
           <label>
             邮箱
@@ -164,8 +170,66 @@ function LoginForm() {
             登录
           </button>
           <p style={{ fontSize: "13px", color: "var(--muted)", marginTop: "12px" }}>
-            还没有账号？点击上方「魔法链接」标签，用邮箱注册后即可设置密码。
+            还没有账号？点击上方「验证码登录」标签，用邮箱注册后即可设置密码。
           </p>
+        </form>
+      ) : (
+        <form onSubmit={otpSent ? verifyOtpCode : sendOtp}>
+          <label>
+            邮箱
+            <input
+              required
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setOtpSent(false); }}
+              disabled={otpSent}
+            />
+          </label>
+          {otpSent && (
+            <label style={{ marginTop: "14px", display: "block" }}>
+              验证码
+              <input
+                required
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="输入 6 位验证码"
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value)}
+                autoFocus
+                style={{ letterSpacing: "4px", fontSize: "20px", textAlign: "center" }}
+              />
+            </label>
+          )}
+          {otpSent ? (
+            <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+              <button className="button" type="submit" style={{ flex: 1 }}>
+                验证登录
+              </button>
+              <button
+                type="button"
+                onClick={() => { setOtpSent(false); setOtpCode(""); setMessage(""); setMessageType(""); }}
+                style={{
+                  padding: "0 16px",
+                  font: "inherit",
+                  fontWeight: 700,
+                  fontSize: "14px",
+                  background: "none",
+                  border: "1px solid var(--line)",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  color: "var(--muted)",
+                }}
+              >
+                重新发送
+              </button>
+            </div>
+          ) : (
+            <button className="button" type="submit" style={{ width: "100%", marginTop: "16px" }}>
+              发送验证码
+            </button>
+          )}
         </form>
       )}
 
@@ -189,7 +253,7 @@ export default function LoginPage() {
         <span className="eyebrow">ACCOUNT</span>
         <h1 className="page-title">登录后，把实战进度带到每一台设备。</h1>
         <p className="page-lead">
-          推荐使用密码登录，速度更快。首次使用请切换到「魔法链接」注册。
+          推荐使用密码登录，速度更快。首次使用请切换到「验证码登录」注册。
         </p>
         <Suspense fallback={<p className="form-message">加载中…</p>}>
           <LoginForm />

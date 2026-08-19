@@ -8,7 +8,7 @@ import { logLoginEvent } from "@/lib/login-event";
 export async function POST(request: Request) {
   const { loginMethod } = await request.json().catch(() => ({}));
 
-  if (loginMethod !== "password" && loginMethod !== "magic_link") {
+  if (loginMethod !== "password" && loginMethod !== "magic_link" && loginMethod !== "otp") {
     return NextResponse.json({ error: "Invalid login method" }, { status: 400 });
   }
 
