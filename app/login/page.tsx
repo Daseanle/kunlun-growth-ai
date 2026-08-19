@@ -193,12 +193,12 @@ function LoginForm() {
                 required
                 type="text"
                 inputMode="numeric"
-                maxLength={6}
-                placeholder="输入 6 位验证码"
+                maxLength={8}
+                placeholder="输入 8 位验证码"
                 value={otpCode}
                 onChange={(e) => setOtpCode(e.target.value)}
                 autoFocus
-                style={{ letterSpacing: "4px", fontSize: "20px", textAlign: "center" }}
+                style={{ letterSpacing: "3px", fontSize: "20px", textAlign: "center" }}
               />
             </label>
           )}
