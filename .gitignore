@@ -1,11 +1,23 @@
+# dependencies
 node_modules
+
+# next.js
 .next
+
+# env files (never commit real secrets)
 .env
 .env.local
 .env.*.local
+.env*
+
+# build artifacts
+tsconfig.tsbuildinfo
+
+# logs
 *.log
+
+# os
 .DS_Store
 
+# vercel
 .vercel
-.vercel
-.env*
