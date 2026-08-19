@@ -63,7 +63,18 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `(function() {
+            try {
+              var theme = localStorage.getItem('theme');
+              var isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+              if (isDark) document.documentElement.setAttribute('data-theme','dark');
+            } catch(e) {}
+          })();`
+        }} />
+      </head>
       <body>
         <AuthProvider initialSession={initialSession}>{children}</AuthProvider>
       </body>

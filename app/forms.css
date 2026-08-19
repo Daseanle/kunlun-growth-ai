@@ -6,3 +6,8 @@
 @media(max-width:560px){.account-nav{gap:4px}.account-nav-item{padding:8px 12px;font-size:13px}}
 .field-error{color:#dc2626;font-size:12px;font-weight:600;margin-top:2px}
 .form-card .button:disabled{opacity:.55;cursor:not-allowed}
+[data-theme="dark"] .form-card{background:#1a1528;border-color:var(--line);box-shadow:0 18px 40px rgba(0,0,0,.15)}
+[data-theme="dark"] .form-card input,[data-theme="dark"] .form-card textarea,[data-theme="dark"] .form-card select{background:#161225;border-color:#3a3358;color:var(--ink)}
+[data-theme="dark"] .form-card input:focus,[data-theme="dark"] .form-card textarea:focus,[data-theme="dark"] .form-card select:focus{outline-color:var(--purple)}
+[data-theme="dark"] .form-card input:disabled{background:#0f0d1a}
+[data-theme="dark"] .account-nav{border-color:var(--line)}

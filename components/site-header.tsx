@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { Brand } from "./brand";
+import { ThemeToggle } from "./theme-toggle";
 
 export function SiteHeader() {
   const { user, loading, signOut } = useAuth();
@@ -45,6 +46,7 @@ export function SiteHeader() {
           <Link href="/challenges">企业挑战</Link>
         </nav>
         <div className="header-actions">
+          <ThemeToggle />
           {!loading && user ? (
             <>
               <Link
