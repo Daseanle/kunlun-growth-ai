@@ -14,18 +14,21 @@ export function SiteHeader() {
   useEffect(() => {
     if (!user) return;
     const supabase = createClient();
-    supabase
-      .from("profiles")
-      .select("display_name, avatar_url")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data, error }) => {
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("display_name, avatar_url")
+          .eq("id", user.id)
+          .maybeSingle();
         if (!error && data) {
           setAvatarUrl(data.avatar_url);
           setDisplayName(data.display_name || "");
         }
-      })
-      .catch(() => {});
+      } catch {
+        // 忽略网络异常
+      }
+    })();
   }, [user]);
 
   const initial = (displayName || user?.email || "U")[0].toUpperCase();
