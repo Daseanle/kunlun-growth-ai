@@ -12,21 +12,24 @@ function LoginForm() {
   const redirect = searchParams.get("redirect") || "/tutorials";
   const authError = searchParams.get("error");
 
+  const [mode, setMode] = useState<"magic" | "password">("magic");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error" | "">("");
 
   useEffect(() => {
     if (authError === "auth") {
       setMessage("登录失败，魔法链接可能已过期，请重新发送。");
+      setMessageType("error");
     }
   }, [authError]);
 
-  async function submit(event: React.FormEvent) {
+  async function sendMagicLink(event: React.FormEvent) {
     event.preventDefault();
     if (!hasSupabaseConfig) {
-      setMessage(
-        "登录服务正在接入：尚未配置 Supabase 云端认证。其他教程内容仍可公开浏览。",
-      );
+      setMessage("登录服务正在接入：尚未配置 Supabase 云端认证。其他教程内容仍可公开浏览。");
+      setMessageType("error");
       return;
     }
     const { error } = await createClient().auth.signInWithOtp({
@@ -35,26 +38,141 @@ function LoginForm() {
         emailRedirectTo: `${location.origin}/auth/confirm?next=${encodeURIComponent(redirect)}`,
       },
     });
-    setMessage(error ? error.message : "登录链接已发送，请查收邮箱。");
+    if (error) {
+      setMessage(error.message);
+      setMessageType("error");
+    } else {
+      setMessage("登录链接已发送，请查收邮箱。");
+      setMessageType("success");
+    }
+  }
+
+  async function signInWithPassword(event: React.FormEvent) {
+    event.preventDefault();
+    if (!hasSupabaseConfig) {
+      setMessage("登录服务正在接入：尚未配置 Supabase 云端认证。");
+      setMessageType("error");
+      return;
+    }
+    const { error } = await createClient().auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) {
+      setMessage(error.message);
+      setMessageType("error");
+    } else {
+      // 记录密码登录事件
+      try {
+        await fetch("/api/log-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ loginMethod: "password" }),
+        });
+      } catch {
+        // 记录失败不影响登录
+      }
+      window.location.href = redirect;
+    }
   }
 
   return (
-    <form className="form-card" onSubmit={submit}>
-      <label>
-        邮箱
-        <input
-          required
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </label>
-      <button className="button" type="submit">
-        发送登录链接
-      </button>
-      {message && <p className="form-message">{message}</p>}
-    </form>
+    <div className="form-card">
+      <div className="login-tabs" style={{ display: "flex", gap: "4px", marginBottom: "24px", borderBottom: "1px solid var(--line)" }}>
+        <button
+          type="button"
+          onClick={() => { setMode("magic"); setMessage(""); setMessageType(""); }}
+          style={{
+            padding: "10px 16px",
+            font: "inherit",
+            fontWeight: 800,
+            fontSize: "14px",
+            background: "none",
+            border: "none",
+            borderBottom: mode === "magic" ? "2px solid var(--purple)" : "2px solid transparent",
+            color: mode === "magic" ? "var(--purple)" : "var(--muted)",
+            cursor: "pointer",
+            marginBottom: "-1px",
+          }}
+        >
+          魔法链接
+        </button>
+        <button
+          type="button"
+          onClick={() => { setMode("password"); setMessage(""); setMessageType(""); }}
+          style={{
+            padding: "10px 16px",
+            font: "inherit",
+            fontWeight: 800,
+            fontSize: "14px",
+            background: "none",
+            border: "none",
+            borderBottom: mode === "password" ? "2px solid var(--purple)" : "2px solid transparent",
+            color: mode === "password" ? "var(--purple)" : "var(--muted)",
+            cursor: "pointer",
+            marginBottom: "-1px",
+          }}
+        >
+          密码登录
+        </button>
+      </div>
+
+      {mode === "magic" ? (
+        <form onSubmit={sendMagicLink}>
+          <label>
+            邮箱
+            <input
+              required
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
+          <button className="button" type="submit" style={{ width: "100%", marginTop: "16px" }}>
+            发送登录链接
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={signInWithPassword}>
+          <label>
+            邮箱
+            <input
+              required
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
+          <label style={{ marginTop: "14px", display: "block" }}>
+            密码
+            <input
+              required
+              type="password"
+              placeholder="输入密码"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </label>
+          <button className="button" type="submit" style={{ width: "100%", marginTop: "16px" }}>
+            登录
+          </button>
+          <p style={{ fontSize: "13px", color: "var(--muted)", marginTop: "12px" }}>
+            还没有密码？先<a href="/account/password" style={{ color: "var(--purple)", fontWeight: 700 }}>用魔法链接登录</a>后设置。
+          </p>
+        </form>
+      )}
+
+      {message && (
+        <p
+          className="form-message"
+          style={{ color: messageType === "success" ? "#2d8060" : "#d33" }}
+        >
+          {message}
+        </p>
+      )}
+    </div>
   );
 }
 

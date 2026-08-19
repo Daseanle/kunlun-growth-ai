@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * 需要登录才能访问的受保护路由前缀。
  * 未登录用户访问这些路径会被重定向到 /login。
  */
-const PROTECTED_PATHS = ["/submit", "/contact"];
+const PROTECTED_PATHS = ["/submit", "/contact", "/account"];
 
 /**
  * 中间件核心逻辑：刷新会话 + 路由保护

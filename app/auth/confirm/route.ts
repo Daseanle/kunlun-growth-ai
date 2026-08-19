@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logLoginEvent } from "@/lib/login-event";
 
 /**
  * 授权码交换路由
@@ -19,6 +20,8 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // 记录魔法链接登录事件
+      await logLoginEvent(request, "magic_link");
       return NextResponse.redirect(`${origin}${next}`);
     }
     console.error("Auth code exchange failed:", error.message);

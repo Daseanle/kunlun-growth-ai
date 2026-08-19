@@ -20,7 +20,12 @@ export function SiteHeader() {
         <div className="header-actions">
           {!loading && user ? (
             <>
-              <span className="text-link">{user.email}</span>
+              <Link className="text-link" href="/account/security" title="登录记录与安全">
+                {user.email}
+              </Link>
+              <Link className="text-link" href="/account/password">
+                设置密码
+              </Link>
               <button
                 className="text-link"
                 onClick={() => signOut()}
