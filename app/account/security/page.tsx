@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Footer } from "@/components/footer";
-import { SiteHeader } from "@/components/site-header";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 
@@ -27,7 +25,12 @@ function deviceIcon(type: string): string {
 }
 
 function methodLabel(method: string): string {
-  return method === "magic_link" ? "魔法链接" : "密码登录";
+  switch (method) {
+    case "magic_link": return "魔法链接";
+    case "password": return "密码登录";
+    case "otp": return "验证码登录";
+    default: return method;
+  }
 }
 
 function formatTime(iso: string): string {
@@ -64,87 +67,71 @@ export default function SecurityPage() {
   }, [user]);
 
   if (loading) {
-    return (
-      <>
-        <SiteHeader />
-        <main className="page shell auth">
-          <p className="form-message">加载中…</p>
-        </main>
-        <Footer />
-      </>
-    );
+    return <p className="form-message">加载中…</p>;
   }
 
   if (!user) {
     return (
       <>
-        <SiteHeader />
-        <main className="page shell auth">
-          <span className="eyebrow">ACCOUNT</span>
-          <h1 className="page-title">请先登录</h1>
-          <p className="page-lead">
-            查看登录记录需要先登录。<Link href="/login">前往登录</Link>
-          </p>
-        </main>
-        <Footer />
+        <span className="eyebrow">ACCOUNT</span>
+        <h1 className="page-title">请先登录</h1>
+        <p className="page-lead">
+          查看登录记录需要先登录。<Link href="/login">前往登录</Link>
+        </p>
       </>
     );
   }
 
   return (
     <>
-      <SiteHeader />
-      <main className="page shell auth">
-        <span className="eyebrow">ACCOUNT</span>
-        <h1 className="page-title">登录记录与安全</h1>
-        <p className="page-lead">
-          查看你最近的登录活动。如果发现异常登录，请及时修改密码。
-        </p>
+      <span className="eyebrow">ACCOUNT</span>
+      <h1 className="page-title">登录记录与安全</h1>
+      <p className="page-lead">
+        查看你最近的登录活动。如果发现异常登录，请及时修改密码。
+      </p>
 
-        <div className="security-actions" style={{ display: "flex", gap: "12px", margin: "28px 0" }}>
-          <Link className="button small ghost" href="/account/password">
-            设置登录密码
-          </Link>
-        </div>
+      <div className="security-actions" style={{ display: "flex", gap: "12px", margin: "28px 0" }}>
+        <Link className="button small ghost" href="/account/password">
+          设置登录密码
+        </Link>
+      </div>
 
-        {fetching ? (
-          <p className="form-message">正在加载登录记录…</p>
-        ) : events.length === 0 ? (
-          <p className="form-message">暂无登录记录。</p>
-        ) : (
-          <div className="login-history" style={{ marginTop: "20px" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
-              <thead>
-                <tr style={{ borderBottom: "2px solid var(--line)", textAlign: "left" }}>
-                  <th style={{ padding: "10px 8px" }}>时间</th>
-                  <th style={{ padding: "10px 8px" }}>设备</th>
-                  <th style={{ padding: "10px 8px" }}>浏览器</th>
-                  <th style={{ padding: "10px 8px" }}>系统</th>
-                  <th style={{ padding: "10px 8px" }}>IP 地址</th>
-                  <th style={{ padding: "10px 8px" }}>方式</th>
+      {fetching ? (
+        <p className="form-message">正在加载登录记录…</p>
+      ) : events.length === 0 ? (
+        <p className="form-message">暂无登录记录。</p>
+      ) : (
+        <div className="login-history" style={{ marginTop: "20px" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+            <thead>
+              <tr style={{ borderBottom: "2px solid var(--line)", textAlign: "left" }}>
+                <th style={{ padding: "10px 8px" }}>时间</th>
+                <th style={{ padding: "10px 8px" }}>设备</th>
+                <th style={{ padding: "10px 8px" }}>浏览器</th>
+                <th style={{ padding: "10px 8px" }}>系统</th>
+                <th style={{ padding: "10px 8px" }}>IP 地址</th>
+                <th style={{ padding: "10px 8px" }}>方式</th>
+              </tr>
+            </thead>
+            <tbody>
+              {events.map((e) => (
+                <tr key={e.id} style={{ borderBottom: "1px solid var(--line)" }}>
+                  <td style={{ padding: "10px 8px", color: "var(--muted)" }}>{formatTime(e.created_at)}</td>
+                  <td style={{ padding: "10px 8px" }}>{deviceIcon(e.device_type)} {e.device_type || "unknown"}</td>
+                  <td style={{ padding: "10px 8px" }}>{e.browser || "—"}</td>
+                  <td style={{ padding: "10px 8px" }}>{e.os || "—"}</td>
+                  <td style={{ padding: "10px 8px", fontFamily: "monospace", fontSize: "13px" }}>{e.ip_address || "—"}</td>
+                  <td style={{ padding: "10px 8px" }}>{methodLabel(e.login_method)}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {events.map((e) => (
-                  <tr key={e.id} style={{ borderBottom: "1px solid var(--line)" }}>
-                    <td style={{ padding: "10px 8px", color: "var(--muted)" }}>{formatTime(e.created_at)}</td>
-                    <td style={{ padding: "10px 8px" }}>{deviceIcon(e.device_type)} {e.device_type || "unknown"}</td>
-                    <td style={{ padding: "10px 8px" }}>{e.browser || "—"}</td>
-                    <td style={{ padding: "10px 8px" }}>{e.os || "—"}</td>
-                    <td style={{ padding: "10px 8px", fontFamily: "monospace", fontSize: "13px" }}>{e.ip_address || "—"}</td>
-                    <td style={{ padding: "10px 8px" }}>{methodLabel(e.login_method)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-        <p className="form-note" style={{ marginTop: "28px" }}>
-          最多显示最近 50 条记录。如有疑问请<Link href="/contact">联系管理员</Link>。
-        </p>
-      </main>
-      <Footer />
+      <p className="form-note" style={{ marginTop: "28px" }}>
+        最多显示最近 50 条记录。如有疑问请<Link href="/contact">联系管理员</Link>。
+      </p>
     </>
   );
 }
