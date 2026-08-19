@@ -1,8 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer } from "@/components/footer";
 import { SiteHeader } from "@/components/site-header";
 import { TutorialCard } from "@/components/tutorial-card";
 import { categoryFor, tutorialEntries } from "@/lib/tutorials";
+
+export const metadata: Metadata = {
+  title: "实战教程库",
+  description:
+    "所有教程都指向一个可验证的成果。涵盖跨境电商、Agent 自动化、创作、数据与知识等方向，每篇含提示词、通关标准和风险提醒。",
+  alternates: { canonical: "/tutorials" },
+  openGraph: {
+    title: "实战教程库 | 昆仑增长AI实战",
+    description: "所有教程都指向一个可验证的成果。涵盖跨境电商、Agent 自动化、创作、数据与知识等方向。",
+  },
+};
 
 export default async function TutorialsPage({
   searchParams,

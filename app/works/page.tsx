@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer } from "@/components/footer";
 import { SiteHeader } from "@/components/site-header";
+
+export const metadata: Metadata = {
+  title: "作品广场",
+  description:
+    "不是作业展示，是下一次应用的起点。首批作品正在招募，提交后先经过来源、链接、公开范围与风险审核，默认公开但作者随时可撤回。",
+  alternates: { canonical: "/works" },
+};
 
 const examples = [
   ["商品图到 3D 广告", "AI × 跨境电商", "待首批作品开放"],

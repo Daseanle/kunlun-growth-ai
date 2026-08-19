@@ -1,14 +1,28 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer } from "@/components/footer";
 import { SiteHeader } from "@/components/site-header";
 import { TutorialCard } from "@/components/tutorial-card";
 import { tutorialEntries } from "@/lib/tutorials";
 
+export const metadata: Metadata = {
+  description:
+    "面向全球中文用户的 AI 实战、作品与真实应用验证平台。首个赛道：AI × 跨境电商。带提示词、通关标准和风险提醒的实战教程。",
+  alternates: { canonical: "/" },
+};
+
 const ecommerce = tutorialEntries.filter((item) => ["ecom-3d-ad", "shopify-agentic", "ugc-variants", "amazon-ai-listing", "ugc-factory", "human-loop-store"].includes(item.slug));
 const latest = tutorialEntries.slice(0, 6);
 
 export default function HomePage() {
-  return <><SiteHeader /><main>
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "昆仑增长AI实战",
+    url: "https://kunlun-growth-ai.vercel.app",
+    description: "面向全球中文用户的 AI 实战、作品与真实应用验证平台",
+  };
+  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }} /><SiteHeader /><main>
     <section className="hero-section"><div className="shell hero-grid"><div><span className="eyebrow">AI APPLICATIONS · GLOBAL CHINESE COMMUNITY</span><h1>从教程到真实应用，<em>让增长发生。</em></h1><p className="hero-copy">昆仑增长AI实战，帮助全球中文用户做出可用作品；帮助 AI 项目找到真实用户；帮助企业发现能落地的解决方案。</p><div className="hero-actions"><Link className="button" href="/tutorials">开始一篇实战教程</Link><Link className="button ghost" href="/submit">提交我的作品</Link></div><div className="hero-trust"><span>✦ 首发赛道：AI × 跨境电商</span><span>✦ 来源与作者可追溯</span><span>✦ 不只展示 Demo</span></div></div><div className="hero-panel"><div className="orbit orbit-one" /><div className="orbit orbit-two" /><div className="proof-card top"><span>01</span><strong>做出作品</strong><small>跟着教程，完成可展示成果</small></div><div className="proof-card middle"><span>02</span><strong>获得试用</strong><small>面向真实用户与企业场景</small></div><div className="proof-card bottom"><span>03</span><strong>形成验证</strong><small>Demo → Tested → Used</small></div></div></div></section>
     <section className="signal-strip"><div className="shell signal-grid"><div><b>{tutorialEntries.length}</b><span>已核验实战教程</span></div><div><b>AI × 跨境</b><span>首个垂直增长赛道</span></div><div><b>公开作品</b><span>默认公开，作者可随时撤回</span></div><div><b>真实挑战</b><span>企业问题即将开放</span></div></div></section>
     <section className="section shell"><div className="section-head"><div><span className="kicker">START WITH ACTION</span><h2>先做出来，再谈增长</h2><p>每篇教程都有明确目标、复制提示词、通关标准、风险提醒和原始来源。</p></div><Link className="arrow-link" href="/tutorials">查看全部教程 →</Link></div><div className="card-grid">{latest.map((tutorial) => <TutorialCard key={tutorial.slug} tutorial={tutorial} slug={tutorial.slug} />)}</div></section>
