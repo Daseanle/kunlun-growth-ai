@@ -18,6 +18,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [forgotPassword, setForgotPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error" | "">("");
 
@@ -82,7 +83,7 @@ function LoginForm() {
       } catch {
         // 记录失败不影响登录
       }
-      window.location.href = redirect;
+      window.location.href = forgotPassword ? "/account/password?reset=1" : redirect;
     }
   }
 
@@ -178,6 +179,25 @@ function LoginForm() {
           </button>
           <p style={{ fontSize: "13px", color: "var(--muted)", marginTop: "12px" }}>
             还没有账号？点击上方「验证码登录」标签，用邮箱注册后即可设置密码。
+          </p>
+          <p style={{ fontSize: "13px", color: "var(--muted)", marginTop: "8px" }}>
+            忘记密码？
+            <button
+              type="button"
+              onClick={() => { setMode("otp"); setForgotPassword(true); setMessage(""); setMessageType(""); }}
+              style={{
+                background: "none",
+                border: "none",
+                font: "inherit",
+                fontWeight: 800,
+                color: "var(--purple)",
+                cursor: "pointer",
+                padding: 0,
+                marginLeft: 4,
+              }}
+            >
+              用验证码登录后重置
+            </button>
           </p>
         </form>
       ) : (
