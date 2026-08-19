@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import "./forms.css";
 import "./tutorial.css";
 import { AuthProvider } from "@/components/auth-provider";
 import { createClient } from "@/lib/supabase/server";
+
+const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" });
 
 const siteUrl = "https://kunlun-growth-ai.vercel.app";
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { tutorialEntries } from "@/lib/tutorials";
@@ -163,13 +164,12 @@ export default function DashboardPage() {
         margin: "10px 0 30px",
       }}>
         {profile?.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={profile.avatar_url}
             alt="头像"
+            width={72}
+            height={72}
             style={{
-              width: "72px",
-              height: "72px",
               borderRadius: "50%",
               objectFit: "cover",
               border: "2px solid var(--line)",

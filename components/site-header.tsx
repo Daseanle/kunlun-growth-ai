@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { Brand } from "./brand";
@@ -57,13 +58,12 @@ export function SiteHeader() {
                 }}
               >
                 {avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={avatarUrl}
                     alt="头像"
+                    width={32}
+                    height={32}
                     style={{
-                      width: "32px",
-                      height: "32px",
                       borderRadius: "50%",
                       objectFit: "cover",
                       border: "2px solid var(--line)",
