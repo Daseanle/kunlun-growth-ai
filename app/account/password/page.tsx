@@ -8,6 +8,45 @@ import { createClient } from "@/lib/supabase/client";
 
 type Mode = "change" | "reset" | "set";
 
+function checkPasswordStrength(password: string): { valid: boolean; feedback: string } {
+  if (password.length < 8) return { valid: false, feedback: "密码至少需要 8 个字符" };
+  const missing: string[] = [];
+  if (!/[A-Z]/.test(password)) missing.push("大写字母");
+  if (!/[a-z]/.test(password)) missing.push("小写字母");
+  if (!/[0-9]/.test(password)) missing.push("数字");
+  if (missing.length) return { valid: false, feedback: `密码需要包含：${missing.join("、")}` };
+  return { valid: true, feedback: "" };
+}
+
+function PasswordStrength({ password }: { password: string }) {
+  if (!password) return null;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasLength = password.length >= 8;
+  const score = [hasLength, hasUpper, hasLower, hasNumber].filter(Boolean).length;
+  const colors = ["#dc2626", "#f59e0b", "#22c55e", "#22c55e"];
+  const color = colors[Math.max(0, score - 1)];
+  const missing = [
+    ...(!hasLength ? ["至少8位"] : []),
+    ...(!hasUpper ? ["大写字母"] : []),
+    ...(!hasLower ? ["小写字母"] : []),
+    ...(!hasNumber ? ["数字"] : []),
+  ];
+  return (
+    <div style={{ marginTop: "6px" }}>
+      <div style={{ display: "flex", gap: "4px", marginBottom: "4px" }}>
+        {[1, 2, 3, 4].map((n) => (
+          <div key={n} style={{ height: "3px", flex: 1, borderRadius: "2px", background: n <= score ? color : "var(--line)", transition: "0.3s" }} />
+        ))}
+      </div>
+      <small style={{ color: score === 4 ? "#22c55e" : "var(--muted)", fontSize: "12px" }}>
+        {score === 4 ? "密码强度：强" : `还需要：${missing.join("、")}`}
+      </small>
+    </div>
+  );
+}
+
 function PasswordPageInner() {
   const { user, loading } = useAuth();
   const searchParams = useSearchParams();
@@ -56,8 +95,9 @@ function PasswordPageInner() {
     setMessage("");
     setMessageType("");
 
-    if (!newPassword || newPassword.length < 8) {
-      setMessage("新密码至少需要 8 个字符。");
+    const strength = checkPasswordStrength(newPassword);
+    if (!strength.valid) {
+      setMessage(strength.feedback);
       setMessageType("error");
       return;
     }
@@ -430,11 +470,12 @@ function PasswordPageInner() {
                 <input
                   required
                   type="password"
-                  placeholder="至少 8 个字符"
+                  placeholder="至少 8 位，含大小写和数字"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   autoFocus
                 />
+                <PasswordStrength password={newPassword} />
               </label>
               <label>
                 确认新密码
